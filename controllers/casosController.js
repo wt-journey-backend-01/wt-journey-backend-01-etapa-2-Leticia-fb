@@ -10,6 +10,8 @@ function isStatusValido(status) {
 function getAllCasos(req, res) {
   const { agente_id, status, q } = req.query;
 
+  let resultados = casosRepository.findAll();
+
   if (agente_id) {
     if (!isUuid(agente_id)) {
       return res.status(400).json({
@@ -20,7 +22,7 @@ function getAllCasos(req, res) {
         }
       });
     }
-    return res.json(casosRepository.findByAgenteId(agente_id));
+    resultados = resultados.filter(caso => caso.agente_id === agente_id);
   }
 
   if (status) {
@@ -33,14 +35,17 @@ function getAllCasos(req, res) {
         }
       });
     }
-    return res.json(casosRepository.findByStatus(status));
+    resultados = resultados.filter(caso => caso.status === status);
   }
 
   if (q) {
-    return res.json(casosRepository.search(q));
+    resultados = resultados.filter(caso =>
+      caso.titulo.toLowerCase().includes(q.toLowerCase()) ||
+      caso.descricao.toLowerCase().includes(q.toLowerCase())
+    );
   }
 
-  return res.status(200).json(casosRepository.findAll());
+  return res.status(200).json(resultados);
 }
 
 function getCasoById(req, res) {
@@ -65,7 +70,6 @@ function getCasoById(req, res) {
     });
   }
 
-  // Se a query ?agente_id=... estiver presente, retorna o agente do caso
   if (agente_id) {
     if (!isUuid(agente_id)) {
       return res.status(400).json({
@@ -117,6 +121,14 @@ function createCaso(req, res) {
     });
   }
 
+  const agente = agentesRepository.findById(agente_id);
+  if (!agente) {
+    return res.status(404).json({
+      status: 404,
+      message: "Agente responsável não encontrado"
+    });
+  }
+
   const novo = casosRepository.create({ titulo, descricao, status, agente_id });
   return res.status(201).json(novo);
 }
@@ -138,10 +150,15 @@ function updateCaso(req, res) {
   const errors = {};
   if (!titulo) errors.titulo = "Campo 'titulo' é obrigatório";
   if (!descricao) errors.descricao = "Campo 'descricao' é obrigatório";
-  if (!status || !isStatusValido(status)) {
+  if (!status) {
+    errors.status = "Campo 'status' é obrigatório";
+  } else if (!isStatusValido(status)) {
     errors.status = "O campo 'status' pode ser somente 'aberto' ou 'solucionado'";
   }
-  if (!agente_id || !isUuid(agente_id)) {
+
+  if (!agente_id) {
+    errors.agente_id = "Campo 'agente_id' é obrigatório";
+  } else if (!isUuid(agente_id)) {
     errors.agente_id = "O campo 'agente_id' deve ser um UUID válido";
   }
 
@@ -150,6 +167,14 @@ function updateCaso(req, res) {
       status: 400,
       message: "Parâmetros inválidos",
       errors
+    });
+  }
+
+  const agente = agentesRepository.findById(agente_id);
+  if (!agente) {
+    return res.status(404).json({
+      status: 404,
+      message: "Agente responsável não encontrado"
     });
   }
 
@@ -178,23 +203,28 @@ function patchCaso(req, res) {
     });
   }
 
+  const errors = {};
+
   if (atualizacoes.status && !isStatusValido(atualizacoes.status)) {
-    return res.status(400).json({
-      status: 400,
-      message: "Parâmetros inválidos",
-      errors: {
-        status: "O campo 'status' pode ser somente 'aberto' ou 'solucionado'"
-      }
-    });
+    errors.status = "O campo 'status' pode ser somente 'aberto' ou 'solucionado'";
   }
 
-  if (atualizacoes.agente_id && !isUuid(atualizacoes.agente_id)) {
+  if (atualizacoes.agente_id) {
+    if (!isUuid(atualizacoes.agente_id)) {
+      errors.agente_id = "O campo 'agente_id' deve ser um UUID válido";
+    } else {
+      const agente = agentesRepository.findById(atualizacoes.agente_id);
+      if (!agente) {
+        errors.agente_id = "Agente responsável não encontrado";
+      }
+    }
+  }
+
+  if (Object.keys(errors).length > 0) {
     return res.status(400).json({
       status: 400,
       message: "Parâmetros inválidos",
-      errors: {
-        agente_id: "O campo 'agente_id' deve ser um UUID válido"
-      }
+      errors
     });
   }
 

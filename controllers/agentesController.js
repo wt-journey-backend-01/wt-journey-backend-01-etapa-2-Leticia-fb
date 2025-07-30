@@ -60,8 +60,15 @@ function createAgente(req, res) {
     });
   }
 
-  const novo = agentesRepo.create({ nome, dataDeIncorporacao, cargo });
-  return res.status(201).json(novo);
+  try {
+    const novo = agentesRepo.create({ nome, dataDeIncorporacao, cargo });
+    return res.status(201).json(novo);
+  } catch (error) {
+    return res.status(400).json({
+      status: 400,
+      message: error.message
+    });
+  }
 }
 
 function updateAgente(req, res) {
@@ -95,15 +102,21 @@ function updateAgente(req, res) {
     });
   }
 
-  const atualizado = agentesRepo.update(id, { nome, dataDeIncorporacao, cargo });
-  if (!atualizado) {
-    return res.status(404).json({
-      status: 404,
-      message: "Agente não encontrado"
+  try {
+    const atualizado = agentesRepo.update(id, { nome, dataDeIncorporacao, cargo });
+    if (!atualizado) {
+      return res.status(404).json({
+        status: 404,
+        message: "Agente não encontrado"
+      });
+    }
+    return res.json(atualizado);
+  } catch (error) {
+    return res.status(400).json({
+      status: 400,
+      message: error.message
     });
   }
-
-  return res.json(atualizado);
 }
 
 function patchAgente(req, res) {
@@ -130,15 +143,21 @@ function patchAgente(req, res) {
     });
   }
 
-  const atualizado = agentesRepo.partialUpdate(id, atualizacoes);
-  if (!atualizado) {
-    return res.status(404).json({
-      status: 404,
-      message: "Agente não encontrado"
+  try {
+    const atualizado = agentesRepo.partialUpdate(id, atualizacoes);
+    if (!atualizado) {
+      return res.status(404).json({
+        status: 404,
+        message: "Agente não encontrado"
+      });
+    }
+    return res.json(atualizado);
+  } catch (error) {
+    return res.status(400).json({
+      status: 400,
+      message: error.message
     });
   }
-
-  return res.json(atualizado);
 }
 
 function deleteAgente(req, res) {

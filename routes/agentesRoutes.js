@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const controller = require('../controllers/agentesController');
+const agentesController = require('../controllers/agentesController');
 
 /**
  * @swagger
  * tags:
  *   name: Agentes
- *   description: Gerenciamento de agentes da polícia
+ *   description: Endpoints relacionados a agentes do departamento
  */
 
 /**
@@ -14,27 +14,29 @@ const controller = require('../controllers/agentesController');
  * /agentes:
  *   get:
  *     summary: Lista todos os agentes
- *     description: "Retorna todos os agentes com filtros por cargo e ordenação por data de incorporação (ex: sort=dataDeIncorporacao ou sort=-dataDeIncorporacao)"
+ *     tags: [Agentes]
  *     parameters:
  *       - in: query
  *         name: cargo
  *         schema:
  *           type: string
- *         description: Filtro por cargo
+ *         description: Filtrar por cargo
  *       - in: query
  *         name: sort
  *         schema:
  *           type: string
- *         description: Ordenação por dataDeIncorporacao ou -dataDeIncorporacao
+ *         description: Ordenar por data de incorporação (dataDeIncorporacao ou -dataDeIncorporacao)
+ *     responses:
+ *       200:
+ *         description: Lista de agentes retornada com sucesso
  */
-
-router.get('/', controller.getAllAgentes);
+router.get('/', agentesController.getAllAgentes);
 
 /**
  * @swagger
  * /agentes/{id}:
  *   get:
- *     summary: Retorna um agente específico
+ *     summary: Retorna um agente pelo ID
  *     tags: [Agentes]
  *     parameters:
  *       - in: path
@@ -46,10 +48,12 @@ router.get('/', controller.getAllAgentes);
  *     responses:
  *       200:
  *         description: Agente encontrado
+ *       400:
+ *         description: ID inválido
  *       404:
  *         description: Agente não encontrado
  */
-router.get('/:id', controller.getAgenteById);
+router.get('/:id', agentesController.getAgenteById);
 
 /**
  * @swagger
@@ -63,7 +67,10 @@ router.get('/:id', controller.getAgenteById);
  *         application/json:
  *           schema:
  *             type: object
- *             required: [nome, dataDeIncorporacao, cargo]
+ *             required:
+ *               - nome
+ *               - dataDeIncorporacao
+ *               - cargo
  *             properties:
  *               nome:
  *                 type: string
@@ -74,17 +81,17 @@ router.get('/:id', controller.getAgenteById);
  *                 type: string
  *     responses:
  *       201:
- *         description: Agente criado
+ *         description: Agente criado com sucesso
  *       400:
- *         description: Dados inválidos
+ *         description: Parâmetros inválidos
  */
-router.post('/', controller.createAgente);
+router.post('/', agentesController.createAgente);
 
 /**
  * @swagger
  * /agentes/{id}:
  *   put:
- *     summary: Atualiza um agente por completo
+ *     summary: Atualiza completamente um agente
  *     tags: [Agentes]
  *     parameters:
  *       - in: path
@@ -98,21 +105,27 @@ router.post('/', controller.createAgente);
  *         application/json:
  *           schema:
  *             type: object
- *             required: [nome, dataDeIncorporacao, cargo]
+ *             required:
+ *               - nome
+ *               - dataDeIncorporacao
+ *               - cargo
  *             properties:
  *               nome:
  *                 type: string
  *               dataDeIncorporacao:
  *                 type: string
+ *                 format: date
  *               cargo:
  *                 type: string
  *     responses:
  *       200:
  *         description: Agente atualizado
+ *       400:
+ *         description: Parâmetros inválidos
  *       404:
  *         description: Agente não encontrado
  */
-router.put('/:id', controller.updateAgente);
+router.put('/:id', agentesController.updateAgente);
 
 /**
  * @swagger
@@ -127,6 +140,7 @@ router.put('/:id', controller.updateAgente);
  *         schema:
  *           type: string
  *     requestBody:
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
@@ -136,21 +150,24 @@ router.put('/:id', controller.updateAgente);
  *                 type: string
  *               dataDeIncorporacao:
  *                 type: string
+ *                 format: date
  *               cargo:
  *                 type: string
  *     responses:
  *       200:
  *         description: Agente atualizado
+ *       400:
+ *         description: Parâmetros inválidos
  *       404:
  *         description: Agente não encontrado
  */
-router.patch('/:id', controller.patchAgente);
+router.patch('/:id', agentesController.patchAgente);
 
 /**
  * @swagger
  * /agentes/{id}:
  *   delete:
- *     summary: Remove um agente
+ *     summary: Remove um agente pelo ID
  *     tags: [Agentes]
  *     parameters:
  *       - in: path
@@ -160,10 +177,12 @@ router.patch('/:id', controller.patchAgente);
  *           type: string
  *     responses:
  *       204:
- *         description: Agente removido
+ *         description: Agente removido com sucesso
+ *       400:
+ *         description: ID inválido
  *       404:
  *         description: Agente não encontrado
  */
-router.delete('/:id', controller.deleteAgente);
+router.delete('/:id', agentesController.deleteAgente);
 
 module.exports = router;

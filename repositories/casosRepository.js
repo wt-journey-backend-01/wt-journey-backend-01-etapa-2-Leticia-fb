@@ -1,86 +1,97 @@
 const { v4: uuidv4 } = require('uuid');
 
-const casos = [
+const cargosValidos = ['delegado', 'investigador', 'escrivao', 'perito', 'agente']; // exemplo de cargos válidos
+
+const agentes = [
   {
-    id: "f5fb2ad5-22a8-4cb4-90f2-8733517a0d46",
-    titulo: "Homicídio em União",
-    descricao: "Disparos foram reportados às 22:33 do dia 10/07/2007 na região do bairro União.",
-    status: "aberto",
-    agente_id: "401bccf5-cf9e-489d-8412-446cd169a0f1"
-  },
-  {
-    id: "a8c5e5c3-f1fc-4c2d-994e-e8db27bc3dc3",
-    titulo: "Furto na padaria central",
-    descricao: "Ocorrência de furto no dia 03/03/2020 com imagens de segurança.",
-    status: "solucionado",
-    agente_id: "876aa470-5154-4e84-9084-e5fc10caa4aa"
+    id: "401bccf5-cf9e-489d-8412-446cd169a0f1",
+    nome: "Rommel Carneiro",
+    dataDeIncorporacao: "1992-10-04",
+    cargo: "delegado"
   }
 ];
 
-// Listar todos os casos
+// Função auxiliar para validar data no formato YYYY-MM-DD
+function isDataValida(data) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(data);
+}
+
+// Função auxiliar para validar cargo
+function isCargoValido(cargo) {
+  return cargosValidos.includes(cargo);
+}
+
 function findAll() {
-  return casos;
+  return agentes;
 }
 
-// Buscar por ID
 function findById(id) {
-  return casos.find(c => c.id === id);
+  return agentes.find(agente => agente.id === id);
 }
 
-// Criar novo caso
-function create(data) {
-  const novo = {
-    id: uuidv4(),
-    ...data
-  };
-  casos.push(novo);
+function create(agente) {
+  if (!isDataValida(agente.dataDeIncorporacao)) {
+    throw new Error("Data de incorporação inválida. Use o formato YYYY-MM-DD.");
+  }
+
+  if (!isCargoValido(agente.cargo)) {
+    throw new Error(`Cargo inválido. Cargos permitidos: ${cargosValidos.join(', ')}`);
+  }
+
+  const novo = { id: uuidv4(), ...agente };
+  agentes.push(novo);
   return novo;
 }
 
-// Atualizar por completo
-function update(id, data) {
-  const index = casos.findIndex(c => c.id === id);
+function update(id, dados) {
+  const index = agentes.findIndex(a => a.id === id);
   if (index === -1) return null;
 
-  casos[index] = { id, ...data };
-  return casos[index];
+  if (!isDataValida(dados.dataDeIncorporacao)) {
+    throw new Error("Data de incorporação inválida. Use o formato YYYY-MM-DD.");
+  }
+
+  if (!isCargoValido(dados.cargo)) {
+    throw new Error(`Cargo inválido. Cargos permitidos: ${cargosValidos.join(', ')}`);
+  }
+
+  agentes[index] = { id, ...dados };
+  return agentes[index];
 }
 
-// Atualização parcial
-function partialUpdate(id, dataParcial) {
-  const caso = casos.find(c => c.id === id);
-  if (!caso) return null;
+function partialUpdate(id, dadosParciais) {
+  const agente = agentes.find(a => a.id === id);
+  if (!agente) return null;
 
-  Object.assign(caso, dataParcial);
-  return caso;
+  if (dadosParciais.dataDeIncorporacao && !isDataValida(dadosParciais.dataDeIncorporacao)) {
+    throw new Error("Data de incorporação inválida. Use o formato YYYY-MM-DD.");
+  }
+
+  if (dadosParciais.cargo && !isCargoValido(dadosParciais.cargo)) {
+    throw new Error(`Cargo inválido. Cargos permitidos: ${cargosValidos.join(', ')}`);
+  }
+
+  Object.assign(agente, dadosParciais);
+  return agente;
 }
 
-// Deletar
 function remove(id) {
-  const index = casos.findIndex(c => c.id === id);
+  const index = agentes.findIndex(a => a.id === id);
   if (index === -1) return false;
-
-  casos.splice(index, 1);
+  agentes.splice(index, 1);
   return true;
 }
 
-// Buscar todos os casos de um agente
-function findByAgenteId(agenteId) {
-  return casos.filter(c => c.agente_id === agenteId);
+function findByCargo(cargo) {
+  return agentes.filter(a => a.cargo === cargo);
 }
 
-// Filtrar por status
-function findByStatus(status) {
-  return casos.filter(c => c.status === status);
-}
-
-// Pesquisa full-text (no título ou descrição)
-function search(termo) {
-  const lower = termo.toLowerCase();
-  return casos.filter(c =>
-    c.titulo.toLowerCase().includes(lower) ||
-    c.descricao.toLowerCase().includes(lower)
-  );
+function sortByData(ordem = "asc") {
+  return [...agentes].sort((a, b) => {
+    const d1 = new Date(a.dataDeIncorporacao);
+    const d2 = new Date(b.dataDeIncorporacao);
+    return ordem === "asc" ? d1 - d2 : d2 - d1;
+  });
 }
 
 module.exports = {
@@ -90,7 +101,6 @@ module.exports = {
   update,
   partialUpdate,
   remove,
-  findByAgenteId,
-  findByStatus,
-  search
+  findByCargo,
+  sortByData
 };
