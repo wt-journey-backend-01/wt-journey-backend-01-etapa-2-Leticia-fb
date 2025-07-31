@@ -20,6 +20,7 @@ const casosController = require('../controllers/casosController');
  *         name: agente_id
  *         schema:
  *           type: string
+ *           format: uuid
  *         description: Filtra por ID do agente responsável
  *       - in: query
  *         name: status
@@ -35,6 +36,12 @@ const casosController = require('../controllers/casosController');
  *     responses:
  *       200:
  *         description: Lista de casos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Caso'
  */
 router.get('/', casosController.getAllCasos);
 
@@ -50,12 +57,27 @@ router.get('/', casosController.getAllCasos);
  *         required: true
  *         schema:
  *           type: string
+ *           format: uuid
  *         description: ID do caso
  *     responses:
  *       200:
  *         description: Caso encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Caso'
+ *       400:
+ *         description: ID inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroPadrao'
  *       404:
  *         description: Caso não encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroPadrao'
  */
 router.get('/:id', casosController.getCasoById);
 
@@ -70,28 +92,20 @@ router.get('/:id', casosController.getCasoById);
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [titulo, descricao, status, agente_id]
- *             properties:
- *               titulo:
- *                 type: string
- *               descricao:
- *                 type: string
- *               status:
- *                 type: string
- *                 enum: [aberto, solucionado]
- *               agente_id:
- *                 type: string
- *             example:
- *               titulo: "Roubo a banco"
- *               descricao: "Ocorrido na avenida principal às 10h"
- *               status: "aberto"
- *               agente_id: "401bccf5-cf9e-489d-8412-446cd169a0f1"
+ *             $ref: '#/components/schemas/Caso'
  *     responses:
  *       201:
  *         description: Caso criado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Caso'
  *       400:
  *         description: Dados inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroPadrao'
  */
 router.post('/', casosController.createCaso);
 
@@ -107,28 +121,32 @@ router.post('/', casosController.createCaso);
  *         required: true
  *         schema:
  *           type: string
+ *           format: uuid
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [titulo, descricao, status, agente_id]
- *             properties:
- *               titulo:
- *                 type: string
- *               descricao:
- *                 type: string
- *               status:
- *                 type: string
- *                 enum: [aberto, solucionado]
- *               agente_id:
- *                 type: string
+ *             $ref: '#/components/schemas/Caso'
  *     responses:
  *       200:
  *         description: Caso atualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Caso'
+ *       400:
+ *         description: Parâmetros inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroPadrao'
  *       404:
  *         description: Caso não encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroPadrao'
  */
 router.put('/:id', casosController.updateCaso);
 
@@ -144,6 +162,7 @@ router.put('/:id', casosController.updateCaso);
  *         required: true
  *         schema:
  *           type: string
+ *           format: uuid
  *     requestBody:
  *       content:
  *         application/json:
@@ -159,11 +178,26 @@ router.put('/:id', casosController.updateCaso);
  *                 enum: [aberto, solucionado]
  *               agente_id:
  *                 type: string
+ *                 format: uuid
  *     responses:
  *       200:
  *         description: Caso atualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Caso'
+ *       400:
+ *         description: Parâmetros inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroPadrao'
  *       404:
  *         description: Caso não encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroPadrao'
  */
 router.patch('/:id', casosController.patchCaso);
 
@@ -179,11 +213,22 @@ router.patch('/:id', casosController.patchCaso);
  *         required: true
  *         schema:
  *           type: string
+ *           format: uuid
  *     responses:
  *       204:
  *         description: Caso removido
+ *       400:
+ *         description: ID inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroPadrao'
  *       404:
  *         description: Caso não encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroPadrao'
  */
 router.delete('/:id', casosController.deleteCaso);
 

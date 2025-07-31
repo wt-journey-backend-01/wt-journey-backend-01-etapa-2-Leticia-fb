@@ -8,6 +8,28 @@ const casos = [
   }
 ];
 
+function findAllComFiltros({ agente_id, status, q }) {
+  let resultado = [...casos];
+
+  if (agente_id) {
+    resultado = resultado.filter(c => c.agente_id === agente_id);
+  }
+
+  if (status) {
+    resultado = resultado.filter(c => c.status === status);
+  }
+
+  if (q) {
+    const termo = q.toLowerCase();
+    resultado = resultado.filter(c =>
+      c.titulo.toLowerCase().includes(termo) ||
+      c.descricao.toLowerCase().includes(termo)
+    );
+  }
+
+  return resultado;
+}
+
 function findAll() {
   return casos;
 }
@@ -38,6 +60,7 @@ function deleteById(id) {
 
 module.exports = {
   findAll,
+  findAllComFiltros,
   findById,
   create,
   update,

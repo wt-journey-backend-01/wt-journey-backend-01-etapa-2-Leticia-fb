@@ -7,6 +7,33 @@ const agentes = [
   }
 ];
 
+function isValidDate(dateStr) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(dateStr) && !isNaN(Date.parse(dateStr));
+}
+
+function findAllComFiltros({ cargo, sort }) {
+  let resultado = [...agentes];
+
+  if (cargo) {
+    resultado = resultado.filter(a => a.cargo === cargo);
+  }
+
+  if (sort === 'dataDeIncorporacao' || sort === '-dataDeIncorporacao') {
+    resultado = resultado.filter(a => isValidDate(a.dataDeIncorporacao));
+
+    resultado.sort((a, b) => {
+      const dataA = new Date(a.dataDeIncorporacao);
+      const dataB = new Date(b.dataDeIncorporacao);
+
+      return sort === 'dataDeIncorporacao'
+        ? dataA - dataB
+        : dataB - dataA;
+    });
+  }
+
+  return resultado;
+}
+
 function findAll() {
   return agentes;
 }
@@ -37,6 +64,7 @@ function deleteById(id) {
 
 module.exports = {
   findAll,
+  findAllComFiltros,
   findById,
   create,
   update,

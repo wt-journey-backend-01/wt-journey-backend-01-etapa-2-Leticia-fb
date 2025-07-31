@@ -13,22 +13,35 @@ const agentesController = require('../controllers/agentesController');
  * @swagger
  * /agentes:
  *   get:
- *     summary: Lista todos os agentes
+ *     summary: Lista todos os agentes com suporte a filtros e ordenação
  *     tags: [Agentes]
  *     parameters:
  *       - in: query
  *         name: cargo
  *         schema:
  *           type: string
- *         description: Filtrar por cargo
+ *         description: Filtra os agentes pelo cargo (ex: "Investigador", "Delegado", etc.)
  *       - in: query
  *         name: sort
  *         schema:
  *           type: string
- *         description: Ordenar por data de incorporação (dataDeIncorporacao ou -dataDeIncorporacao)
+ *           enum: [dataDeIncorporacao, -dataDeIncorporacao]
+ *         description: Ordena os agentes pela data de incorporação (crescente ou decrescente)
  *     responses:
  *       200:
  *         description: Lista de agentes retornada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Agente'
+ *       400:
+ *         description: Parâmetros inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroPadrao'
  */
 router.get('/', agentesController.getAllAgentes);
 
@@ -44,14 +57,27 @@ router.get('/', agentesController.getAllAgentes);
  *         required: true
  *         schema:
  *           type: string
+ *           format: uuid
  *         description: ID do agente
  *     responses:
  *       200:
  *         description: Agente encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Agente'
  *       400:
  *         description: ID inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroPadrao'
  *       404:
  *         description: Agente não encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroPadrao'
  */
 router.get('/:id', agentesController.getAgenteById);
 
@@ -66,28 +92,20 @@ router.get('/:id', agentesController.getAgenteById);
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - nome
- *               - dataDeIncorporacao
- *               - cargo
- *             properties:
- *               nome:
- *                 type: string
- *               dataDeIncorporacao:
- *                 type: string
- *                 format: date
- *               cargo:
- *                 type: string
- *             example:
- *               nome: "Letícia Almeida"
- *               dataDeIncorporacao: "2023-03-10"
- *               cargo: "delegado"
+ *             $ref: '#/components/schemas/Agente'
  *     responses:
  *       201:
  *         description: Agente criado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Agente'
  *       400:
  *         description: Parâmetros inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroPadrao'
  */
 router.post('/', agentesController.createAgente);
 
@@ -103,31 +121,32 @@ router.post('/', agentesController.createAgente);
  *         required: true
  *         schema:
  *           type: string
+ *           format: uuid
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - nome
- *               - dataDeIncorporacao
- *               - cargo
- *             properties:
- *               nome:
- *                 type: string
- *               dataDeIncorporacao:
- *                 type: string
- *                 format: date
- *               cargo:
- *                 type: string
+ *             $ref: '#/components/schemas/Agente'
  *     responses:
  *       200:
  *         description: Agente atualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Agente'
  *       400:
  *         description: Parâmetros inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroPadrao'
  *       404:
  *         description: Agente não encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroPadrao'
  */
 router.put('/:id', agentesController.updateAgente);
 
@@ -143,6 +162,7 @@ router.put('/:id', agentesController.updateAgente);
  *         required: true
  *         schema:
  *           type: string
+ *           format: uuid
  *     requestBody:
  *       required: true
  *       content:
@@ -160,10 +180,22 @@ router.put('/:id', agentesController.updateAgente);
  *     responses:
  *       200:
  *         description: Agente atualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Agente'
  *       400:
  *         description: Parâmetros inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroPadrao'
  *       404:
  *         description: Agente não encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroPadrao'
  */
 router.patch('/:id', agentesController.patchAgente);
 
@@ -179,13 +211,22 @@ router.patch('/:id', agentesController.patchAgente);
  *         required: true
  *         schema:
  *           type: string
+ *           format: uuid
  *     responses:
  *       204:
  *         description: Agente removido com sucesso
  *       400:
  *         description: ID inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroPadrao'
  *       404:
  *         description: Agente não encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroPadrao'
  */
 router.delete('/:id', agentesController.deleteAgente);
 
