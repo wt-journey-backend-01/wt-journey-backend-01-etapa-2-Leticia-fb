@@ -141,10 +141,6 @@ function updateCaso(req, res) {
   res.status(200).json(atualizado);
 }
 
-const { validate: isUuid } = require('uuid');
-const casosRepository = require('../repositories/casosRepository');
-const agentesRepository = require('../repositories/agentesRepository');
-
 function patchCaso(req, res) {
   const { id } = req.params;
   const { id: idBody, titulo, descricao, status, agente_id } = req.body;

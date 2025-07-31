@@ -6,42 +6,36 @@ const agentesController = require('../controllers/agentesController');
  * @swagger
  * tags:
  *   name: Agentes
- *   description: Endpoints relacionados a agentes do departamento
+ *   description: Gerenciamento de agentes da polícia
  */
 
 /**
  * @swagger
  * /agentes:
  *   get:
- *     summary: Lista todos os agentes com suporte a filtros e ordenação
+ *     summary: Lista todos os agentes
  *     tags: [Agentes]
  *     parameters:
  *       - in: query
  *         name: cargo
  *         schema:
  *           type: string
- *         description: Filtra os agentes pelo cargo (ex: "Investigador", "Delegado", etc.)
+ *         description: "Filtra os agentes pelo cargo (ex: 'Investigador', 'Delegado')"
  *       - in: query
  *         name: sort
  *         schema:
  *           type: string
  *           enum: [dataDeIncorporacao, -dataDeIncorporacao]
- *         description: Ordena os agentes pela data de incorporação (crescente ou decrescente)
+ *         description: "Ordena os agentes pela data de incorporação (crescente ou decrescente)"
  *     responses:
  *       200:
- *         description: Lista de agentes retornada com sucesso
+ *         description: Lista de agentes
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Agente'
- *       400:
- *         description: Parâmetros inválidos
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErroPadrao'
  */
 router.get('/', agentesController.getAllAgentes);
 
@@ -49,7 +43,7 @@ router.get('/', agentesController.getAllAgentes);
  * @swagger
  * /agentes/{id}:
  *   get:
- *     summary: Retorna um agente pelo ID
+ *     summary: Retorna um agente específico
  *     tags: [Agentes]
  *     parameters:
  *       - in: path
@@ -95,13 +89,13 @@ router.get('/:id', agentesController.getAgenteById);
  *             $ref: '#/components/schemas/Agente'
  *     responses:
  *       201:
- *         description: Agente criado com sucesso
+ *         description: Agente criado
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Agente'
  *       400:
- *         description: Parâmetros inválidos
+ *         description: Dados inválidos
  *         content:
  *           application/json:
  *             schema:
@@ -113,7 +107,7 @@ router.post('/', agentesController.createAgente);
  * @swagger
  * /agentes/{id}:
  *   put:
- *     summary: Atualiza completamente um agente
+ *     summary: Atualiza os dados de um agente por completo
  *     tags: [Agentes]
  *     parameters:
  *       - in: path
@@ -154,7 +148,7 @@ router.put('/:id', agentesController.updateAgente);
  * @swagger
  * /agentes/{id}:
  *   patch:
- *     summary: Atualiza parcialmente um agente
+ *     summary: Atualiza parcialmente os dados de um agente
  *     tags: [Agentes]
  *     parameters:
  *       - in: path
@@ -164,7 +158,6 @@ router.put('/:id', agentesController.updateAgente);
  *           type: string
  *           format: uuid
  *     requestBody:
- *       required: true
  *       content:
  *         application/json:
  *           schema:
@@ -203,7 +196,7 @@ router.patch('/:id', agentesController.patchAgente);
  * @swagger
  * /agentes/{id}:
  *   delete:
- *     summary: Remove um agente pelo ID
+ *     summary: Remove um agente
  *     tags: [Agentes]
  *     parameters:
  *       - in: path
@@ -214,7 +207,7 @@ router.patch('/:id', agentesController.patchAgente);
  *           format: uuid
  *     responses:
  *       204:
- *         description: Agente removido com sucesso
+ *         description: Agente removido
  *       400:
  *         description: ID inválido
  *         content:

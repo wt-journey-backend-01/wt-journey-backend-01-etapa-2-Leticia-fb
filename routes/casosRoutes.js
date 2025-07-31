@@ -21,18 +21,18 @@ const casosController = require('../controllers/casosController');
  *         schema:
  *           type: string
  *           format: uuid
- *         description: Filtra por ID do agente responsável
+ *         description: "Filtra por ID do agente responsável"
  *       - in: query
  *         name: status
  *         schema:
  *           type: string
  *           enum: [aberto, solucionado]
- *         description: Filtra por status do caso
+ *         description: "Filtra por status do caso"
  *       - in: query
  *         name: q
  *         schema:
  *           type: string
- *         description: Busca no título ou descrição
+ *         description: "Busca no título ou descrição"
  *     responses:
  *       200:
  *         description: Lista de casos
@@ -58,7 +58,7 @@ router.get('/', casosController.getAllCasos);
  *         schema:
  *           type: string
  *           format: uuid
- *         description: ID do caso
+ *         description: "ID do caso"
  *     responses:
  *       200:
  *         description: Caso encontrado
@@ -122,6 +122,7 @@ router.post('/', casosController.createCaso);
  *         schema:
  *           type: string
  *           format: uuid
+ *         description: "ID do caso"
  *     requestBody:
  *       required: true
  *       content:
@@ -163,6 +164,7 @@ router.put('/:id', casosController.updateCaso);
  *         schema:
  *           type: string
  *           format: uuid
+ *         description: "ID do caso"
  *     requestBody:
  *       content:
  *         application/json:
@@ -214,6 +216,7 @@ router.patch('/:id', casosController.patchCaso);
  *         schema:
  *           type: string
  *           format: uuid
+ *         description: "ID do caso"
  *     responses:
  *       204:
  *         description: Caso removido
