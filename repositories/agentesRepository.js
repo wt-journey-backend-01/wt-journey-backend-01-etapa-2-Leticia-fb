@@ -15,7 +15,7 @@ function findAllComFiltros({ cargo, sort }) {
   let resultado = [...agentes];
 
   if (cargo) {
-    resultado = resultado.filter(a => a.cargo === cargo);
+    resultado = resultado.filter(a => a.cargo.toLowerCase() === cargo.toLowerCase());
   }
 
   if (sort === 'dataDeIncorporacao' || sort === '-dataDeIncorporacao') {
@@ -25,14 +25,13 @@ function findAllComFiltros({ cargo, sort }) {
       const dataA = new Date(a.dataDeIncorporacao);
       const dataB = new Date(b.dataDeIncorporacao);
 
-      return sort === 'dataDeIncorporacao'
-        ? dataA - dataB
-        : dataB - dataA;
+      return sort === 'dataDeIncorporacao' ? dataA - dataB : dataB - dataA;
     });
   }
 
   return resultado;
 }
+
 
 function findAll() {
   return agentes;

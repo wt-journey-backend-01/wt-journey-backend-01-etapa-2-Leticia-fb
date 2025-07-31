@@ -8,6 +8,7 @@ const casos = [
   }
 ];
 
+
 function findAllComFiltros({ agente_id, status, q }) {
   let resultado = [...casos];
 

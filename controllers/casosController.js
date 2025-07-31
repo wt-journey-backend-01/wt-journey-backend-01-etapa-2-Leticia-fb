@@ -1,28 +1,35 @@
 const casosRepository = require('../repositories/casosRepository');
 const agentesRepository = require('../repositories/agentesRepository');
-const { v4: uuidv4, validate: isUuid } = require('uuid');
+const { validate: isUuid } = require('uuid');
 
 function getAllCasos(req, res) {
   const { agente_id, status, q } = req.query;
+  const errors = {};
 
-  let casos = casosRepository.findAll();
-
+  // Validação do agente_id
   if (agente_id) {
-    casos = casos.filter(c => c.agente_id === agente_id);
+    if (!isUuid(agente_id)) {
+      errors.agente_id = "ID deve ser um UUID válido";
+    } else if (!agentesRepository.findById(agente_id)) {
+      errors.agente_id = "Agente não encontrado";
+    }
   }
 
-  if (status) {
-    casos = casos.filter(c => c.status === status);
+  // Validação do status
+  if (status && status !== 'aberto' && status !== 'solucionado') {
+    errors.status = "Status deve ser 'aberto' ou 'solucionado'";
   }
 
-  if (q) {
-    const query = q.toLowerCase();
-    casos = casos.filter(c =>
-      c.titulo.toLowerCase().includes(query) || c.descricao.toLowerCase().includes(query)
-    );
+  if (Object.keys(errors).length > 0) {
+    return res.status(400).json({
+      status: 400,
+      message: "Parâmetros inválidos",
+      errors
+    });
   }
 
-  res.status(200).json(casos);
+  const resultado = casosRepository.findAllComFiltros({ agente_id, status, q });
+  return res.json(resultado);
 }
 
 function getCasoById(req, res) {
@@ -86,40 +93,44 @@ function updateCaso(req, res) {
   const { id } = req.params;
   const { titulo, descricao, status, agente_id } = req.body;
 
-  const errors = {};
-
+  // Verificação de ID (UUID válido)
   if (!isUuid(id)) {
-    errors.id = "ID deve ser um UUID válido";
-  }
-
-  if (!titulo) errors.titulo = "Campo obrigatório";
-  if (!descricao) errors.descricao = "Campo obrigatório";
-  if (!["aberto", "solucionado"].includes(status)) {
-    errors.status = "O campo 'status' pode ser somente 'aberto' ou 'solucionado'";
-  }
-  if (!agente_id) {
-    errors.agente_id = "Campo obrigatório";
-  } else if (!isUuid(agente_id)) {
-    errors.agente_id = "ID do agente deve ser UUID válido";
-  } else if (!agentesRepository.findById(agente_id)) {
-    errors.agente_id = "Agente não encontrado";
-  }
-
-  if (Object.keys(errors).length > 0) {
     return res.status(400).json({
       status: 400,
       message: "Parâmetros inválidos",
-      errors
+      errors: { id: "ID deve ser um UUID válido" }
     });
   }
 
-  const caso = casosRepository.findById(id);
-  if (!caso) {
-    return res.status(404).json({ status: 404, message: "Caso não encontrado" });
+  const casoExistente = casosRepository.findById(id);
+  if (!casoExistente) {
+    return res.status(404).json({
+      status: 404,
+      message: "Caso não encontrado"
+    });
+  }
+
+  // Validação de campos obrigatórios
+  const erros = {};
+  if (!titulo) erros.titulo = "Campo obrigatório";
+  if (!descricao) erros.descricao = "Campo obrigatório";
+  if (!status || !["aberto", "solucionado"].includes(status)) {
+    erros.status = "Status deve ser 'aberto' ou 'solucionado'";
+  }
+  if (!agente_id || !isUuid(agente_id)) {
+    erros.agente_id = "Agente deve ser um UUID válido";
+  }
+
+  if (Object.keys(erros).length > 0) {
+    return res.status(400).json({
+      status: 400,
+      message: "Parâmetros inválidos",
+      errors: erros
+    });
   }
 
   const atualizado = {
-    id,
+    id, // mantém o ID original
     titulo,
     descricao,
     status,
@@ -130,46 +141,94 @@ function updateCaso(req, res) {
   res.status(200).json(atualizado);
 }
 
+const { validate: isUuid } = require('uuid');
+const casosRepository = require('../repositories/casosRepository');
+const agentesRepository = require('../repositories/agentesRepository');
+
 function patchCaso(req, res) {
   const { id } = req.params;
-
-  const errors = {};
+  const { id: idBody, titulo, descricao, status, agente_id } = req.body;
 
   if (!isUuid(id)) {
-    errors.id = "ID deve ser um UUID válido";
-  }
-
-  const { id: _, ...dataAtualizacao } = req.body;
-
-  if (dataAtualizacao.status && !["aberto", "solucionado"].includes(dataAtualizacao.status)) {
-    errors.status = "O campo 'status' pode ser somente 'aberto' ou 'solucionado'";
-  }
-
-  if (dataAtualizacao.agente_id) {
-    if (!isUuid(dataAtualizacao.agente_id)) {
-      errors.agente_id = "ID do agente deve ser UUID válido";
-    } else if (!agentesRepository.findById(dataAtualizacao.agente_id)) {
-      errors.agente_id = "Agente não encontrado";
-    }
-  }
-
-  if (Object.keys(errors).length > 0) {
     return res.status(400).json({
       status: 400,
       message: "Parâmetros inválidos",
-      errors
+      errors: { id: "ID deve ser um UUID válido" }
     });
   }
 
   const caso = casosRepository.findById(id);
   if (!caso) {
-    return res.status(404).json({ status: 404, message: "Caso não encontrado" });
+    return res.status(404).json({
+      status: 404,
+      message: "Caso não encontrado"
+    });
   }
 
-  const atualizado = { ...caso, ...dataAtualizacao };
+  // Proíbe alteração do ID
+  if (idBody && idBody !== id) {
+    return res.status(400).json({
+      status: 400,
+      message: "Alteração do ID não é permitida"
+    });
+  }
+
+  // Verifica se pelo menos um campo foi enviado
+  if (titulo === undefined && descricao === undefined && status === undefined && agente_id === undefined) {
+    return res.status(400).json({
+      status: 400,
+      message: "Nenhum campo válido fornecido para atualização"
+    });
+  }
+
+  const erros = {};
+
+  if (titulo !== undefined && typeof titulo !== 'string') {
+    erros.titulo = "Título deve ser uma string";
+  }
+
+  if (descricao !== undefined && typeof descricao !== 'string') {
+    erros.descricao = "Descrição deve ser uma string";
+  }
+
+  if (status !== undefined && status !== 'aberto' && status !== 'solucionado') {
+    erros.status = "Status deve ser 'aberto' ou 'solucionado'";
+  }
+
+  if (agente_id !== undefined) {
+    if (!isUuid(agente_id)) {
+      erros.agente_id = "ID do agente deve ser um UUID válido";
+    } else if (!agentesRepository.findById(agente_id)) {
+      return res.status(404).json({
+        status: 404,
+        message: "Agente não encontrado"
+      });
+    }
+  }
+
+  if (Object.keys(erros).length > 0) {
+    return res.status(400).json({
+      status: 400,
+      message: "Parâmetros inválidos",
+      errors: erros
+    });
+  }
+
+  const atualizado = {
+    ...caso,
+    ...(titulo !== undefined && { titulo }),
+    ...(descricao !== undefined && { descricao }),
+    ...(status !== undefined && { status }),
+    ...(agente_id !== undefined && { agente_id }),
+  };
+
   casosRepository.update(id, atualizado);
   res.status(200).json(atualizado);
 }
+
+module.exports = {
+  patchCaso
+};
 
 function deleteCaso(req, res) {
   const { id } = req.params;
