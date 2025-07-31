@@ -179,7 +179,6 @@ router.patch('/:id', casosController.patchCaso);
  *         description: Caso não encontrado
  */
 
-router.get('/:id/agente', casosController.getAgenteDoCaso);
 
 router.delete('/:id', casosController.deleteCaso);
 

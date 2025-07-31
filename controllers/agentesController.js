@@ -1,26 +1,22 @@
-const agentesRepo = require('../repositories/agentesRepository');
+const agentesRepository = require('../repositories/agentesRepository');
 const { validate: isUuid } = require('uuid');
-
-function isDataValida(data) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(data);
-}
 
 function getAllAgentes(req, res) {
   const { cargo, sort } = req.query;
 
-  let resultados = agentesRepo.findAll();
+  let agentes = agentesRepository.findAll();
 
   if (cargo) {
-    resultados = resultados.filter(a => a.cargo === cargo);
+    agentes = agentes.filter(agente => agente.cargo === cargo);
   }
 
   if (sort === 'dataDeIncorporacao') {
-    resultados = resultados.sort((a, b) => new Date(a.dataDeIncorporacao) - new Date(b.dataDeIncorporacao));
+    agentes.sort((a, b) => new Date(a.dataDeIncorporacao) - new Date(b.dataDeIncorporacao));
   } else if (sort === '-dataDeIncorporacao') {
-    resultados = resultados.sort((a, b) => new Date(b.dataDeIncorporacao) - new Date(a.dataDeIncorporacao));
+    agentes.sort((a, b) => new Date(b.dataDeIncorporacao) - new Date(a.dataDeIncorporacao));
   }
 
-  return res.json(resultados);
+  res.status(200).json(agentes);
 }
 
 function getAgenteById(req, res) {
@@ -30,13 +26,12 @@ function getAgenteById(req, res) {
     return res.status(400).json({
       status: 400,
       message: "Parâmetros inválidos",
-      errors: {
-        id: "O campo 'id' deve ser um UUID válido"
-      }
+      errors: { id: "ID deve ser um UUID válido" }
     });
   }
 
-  const agente = agentesRepo.findById(id);
+  const agente = agentesRepository.findById(id);
+
   if (!agente) {
     return res.status(404).json({
       status: 404,
@@ -44,38 +39,29 @@ function getAgenteById(req, res) {
     });
   }
 
-  return res.json(agente);
+  res.status(200).json(agente);
 }
 
 function createAgente(req, res) {
-  const { nome, dataDeIncorporacao, cargo } = req.body;
+  const { id, nome, dataDeIncorporacao, cargo } = req.body;
 
-  const errors = {};
-  if (!nome) errors.nome = "Campo 'nome' é obrigatório";
-  if (!dataDeIncorporacao) {
-    errors.dataDeIncorporacao = "Campo 'dataDeIncorporacao' é obrigatório";
-  } else if (!isDataValida(dataDeIncorporacao)) {
-    errors.dataDeIncorporacao = "Campo dataDeIncorporacao deve seguir a formatação 'YYYY-MM-DD'";
-  }
-  if (!cargo) errors.cargo = "Campo 'cargo' é obrigatório";
-
-  if (Object.keys(errors).length > 0) {
+  if (!id || !isUuid(id) || !nome || !dataDeIncorporacao || !cargo) {
     return res.status(400).json({
       status: 400,
       message: "Parâmetros inválidos",
-      errors
+      errors: {
+        id: "UUID obrigatório",
+        nome: "Campo obrigatório",
+        dataDeIncorporacao: "Campo obrigatório (YYYY-MM-DD)",
+        cargo: "Campo obrigatório"
+      }
     });
   }
 
-  try {
-    const novo = agentesRepo.create({ nome, dataDeIncorporacao, cargo });
-    return res.status(201).json(novo);
-  } catch (error) {
-    return res.status(400).json({
-      status: 400,
-      message: error.message
-    });
-  }
+  const novoAgente = { id, nome, dataDeIncorporacao, cargo };
+  agentesRepository.create(novoAgente);
+
+  res.status(201).json(novoAgente);
 }
 
 function updateAgente(req, res) {
@@ -85,110 +71,48 @@ function updateAgente(req, res) {
   if (!isUuid(id)) {
     return res.status(400).json({
       status: 400,
-      message: "Parâmetros inválidos",
-      errors: {
-        id: "O campo 'id' deve ser um UUID válido"
-      }
+      message: "ID inválido"
     });
   }
 
-  const errors = {};
-  if (!nome) errors.nome = "Campo 'nome' é obrigatório";
-  if (!dataDeIncorporacao) {
-    errors.dataDeIncorporacao = "Campo 'dataDeIncorporacao' é obrigatório";
-  } else if (!isDataValida(dataDeIncorporacao)) {
-    errors.dataDeIncorporacao = "Campo dataDeIncorporacao deve seguir a formatação 'YYYY-MM-DD'";
-  }
-  if (!cargo) errors.cargo = "Campo 'cargo' é obrigatório";
-
-  if (Object.keys(errors).length > 0) {
-    return res.status(400).json({
-      status: 400,
-      message: "Parâmetros inválidos",
-      errors
-    });
+  const agente = agentesRepository.findById(id);
+  if (!agente) {
+    return res.status(404).json({ status: 404, message: "Agente não encontrado" });
   }
 
-  try {
-    const atualizado = agentesRepo.update(id, { nome, dataDeIncorporacao, cargo });
-    if (!atualizado) {
-      return res.status(404).json({
-        status: 404,
-        message: "Agente não encontrado"
-      });
-    }
-    return res.json(atualizado);
-  } catch (error) {
-    return res.status(400).json({
-      status: 400,
-      message: error.message
-    });
-  }
+  const atualizado = { id, nome, dataDeIncorporacao, cargo };
+  agentesRepository.update(id, atualizado);
+  res.status(200).json(atualizado);
 }
 
 function patchAgente(req, res) {
   const { id } = req.params;
-  const atualizacoes = req.body;
-
   if (!isUuid(id)) {
-    return res.status(400).json({
-      status: 400,
-      message: "Parâmetros inválidos",
-      errors: {
-        id: "O campo 'id' deve ser um UUID válido"
-      }
-    });
+    return res.status(400).json({ status: 400, message: "ID inválido" });
   }
 
-  if (atualizacoes.dataDeIncorporacao && !isDataValida(atualizacoes.dataDeIncorporacao)) {
-    return res.status(400).json({
-      status: 400,
-      message: "Parâmetros inválidos",
-      errors: {
-        dataDeIncorporacao: "Campo dataDeIncorporacao deve seguir a formatação 'YYYY-MM-DD'"
-      }
-    });
+  const agente = agentesRepository.findById(id);
+  if (!agente) {
+    return res.status(404).json({ status: 404, message: "Agente não encontrado" });
   }
 
-  try {
-    const atualizado = agentesRepo.partialUpdate(id, atualizacoes);
-    if (!atualizado) {
-      return res.status(404).json({
-        status: 404,
-        message: "Agente não encontrado"
-      });
-    }
-    return res.json(atualizado);
-  } catch (error) {
-    return res.status(400).json({
-      status: 400,
-      message: error.message
-    });
-  }
+  const atualizado = { ...agente, ...req.body };
+  agentesRepository.update(id, atualizado);
+  res.status(200).json(atualizado);
 }
 
 function deleteAgente(req, res) {
   const { id } = req.params;
-
   if (!isUuid(id)) {
-    return res.status(400).json({
-      status: 400,
-      message: "Parâmetros inválidos",
-      errors: {
-        id: "O campo 'id' deve ser um UUID válido"
-      }
-    });
+    return res.status(400).json({ status: 400, message: "ID inválido" });
   }
 
-  const sucesso = agentesRepo.remove(id);
-  if (!sucesso) {
-    return res.status(404).json({
-      status: 404,
-      message: "Agente não encontrado"
-    });
+  const success = agentesRepository.deleteById(id);
+  if (!success) {
+    return res.status(404).json({ status: 404, message: "Agente não encontrado" });
   }
 
-  return res.status(204).send();
+  res.status(204).send();
 }
 
 module.exports = {

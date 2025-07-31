@@ -5,9 +5,9 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'API Departamento de Polícia',
+      title: 'API do Departamento de Polícia',
       version: '1.0.0',
-      description: 'Documentação da API RESTful com Express e Swagger',
+      description: 'Documentação da API RESTful para agentes e casos policiais.',
     },
     servers: [
       {
@@ -15,7 +15,7 @@ const options = {
       },
     ],
   },
-  apis: ['./routes/*.js'], // <-- Lê os comentários JSDoc das rotas
+  apis: ['./routes/*.js'], // Caminho para anotações nas rotas
 };
 
 const swaggerSpec = swaggerJSDoc(options);
