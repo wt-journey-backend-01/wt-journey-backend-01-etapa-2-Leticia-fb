@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const agentesController = require('../controllers/agentesController');
 
-
 /**
  * @swagger
  * tags:
@@ -80,6 +79,10 @@ router.get('/:id', agentesController.getAgenteById);
  *                 format: date
  *               cargo:
  *                 type: string
+ *             example:
+ *               nome: "Letícia Almeida"
+ *               dataDeIncorporacao: "2023-03-10"
+ *               cargo: "delegado"
  *     responses:
  *       201:
  *         description: Agente criado com sucesso

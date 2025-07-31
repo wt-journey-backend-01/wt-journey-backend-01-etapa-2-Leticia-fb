@@ -82,6 +82,11 @@ router.get('/:id', casosController.getCasoById);
  *                 enum: [aberto, solucionado]
  *               agente_id:
  *                 type: string
+ *             example:
+ *               titulo: "Roubo a banco"
+ *               descricao: "Ocorrido na avenida principal às 10h"
+ *               status: "aberto"
+ *               agente_id: "401bccf5-cf9e-489d-8412-446cd169a0f1"
  *     responses:
  *       201:
  *         description: Caso criado
@@ -94,7 +99,7 @@ router.post('/', casosController.createCaso);
  * @swagger
  * /casos/{id}:
  *   put:
- *     summary: Atualiza um caso completamente
+ *     summary: Atualiza os dados de um caso por completo
  *     tags: [Casos]
  *     parameters:
  *       - in: path
@@ -116,6 +121,7 @@ router.post('/', casosController.createCaso);
  *                 type: string
  *               status:
  *                 type: string
+ *                 enum: [aberto, solucionado]
  *               agente_id:
  *                 type: string
  *     responses:
@@ -130,7 +136,7 @@ router.put('/:id', casosController.updateCaso);
  * @swagger
  * /casos/{id}:
  *   patch:
- *     summary: Atualiza parcialmente um caso
+ *     summary: Atualiza parcialmente os dados de um caso
  *     tags: [Casos]
  *     parameters:
  *       - in: path
@@ -150,6 +156,7 @@ router.put('/:id', casosController.updateCaso);
  *                 type: string
  *               status:
  *                 type: string
+ *                 enum: [aberto, solucionado]
  *               agente_id:
  *                 type: string
  *     responses:
@@ -178,8 +185,6 @@ router.patch('/:id', casosController.patchCaso);
  *       404:
  *         description: Caso não encontrado
  */
-
-
 router.delete('/:id', casosController.deleteCaso);
 
 module.exports = router;

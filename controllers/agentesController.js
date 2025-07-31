@@ -1,23 +1,42 @@
 const agentesRepository = require('../repositories/agentesRepository');
-const { validate: isUuid } = require('uuid');
-
+const { v4: uuidv4, validate: isUuid } = require('uuid');
 function getAllAgentes(req, res) {
   const { cargo, sort } = req.query;
 
-  let agentes = agentesRepository.findAll();
+  // Cópia segura do array original
+  let agentes = [...agentesRepository.findAll()];
 
+  // Filtro por cargo
   if (cargo) {
     agentes = agentes.filter(agente => agente.cargo === cargo);
   }
 
-  if (sort === 'dataDeIncorporacao') {
-    agentes.sort((a, b) => new Date(a.dataDeIncorporacao) - new Date(b.dataDeIncorporacao));
-  } else if (sort === '-dataDeIncorporacao') {
-    agentes.sort((a, b) => new Date(b.dataDeIncorporacao) - new Date(a.dataDeIncorporacao));
+  // Ordenação por dataDeIncorporacao (crescente ou decrescente)
+  if (sort === 'dataDeIncorporacao' || sort === '-dataDeIncorporacao') {
+    agentes = agentes.filter(a => isValidDate(a.dataDeIncorporacao)); // remove agentes com datas inválidas
+
+    agentes.sort((a, b) => {
+      const dateA = new Date(a.dataDeIncorporacao);
+      const dateB = new Date(b.dataDeIncorporacao);
+
+      return sort === 'dataDeIncorporacao'
+        ? dateA - dateB // crescente
+        : dateB - dateA; // decrescente
+    });
   }
 
   res.status(200).json(agentes);
 }
+
+// Função auxiliar para validar datas no formato YYYY-MM-DD
+function isValidDate(dateStr) {
+  const regex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!regex.test(dateStr)) return false;
+
+  const date = new Date(dateStr);
+  return !isNaN(date.getTime());
+}
+
 
 function getAgenteById(req, res) {
   const { id } = req.params;
@@ -43,22 +62,28 @@ function getAgenteById(req, res) {
 }
 
 function createAgente(req, res) {
-  const { id, nome, dataDeIncorporacao, cargo } = req.body;
+  const { nome, dataDeIncorporacao, cargo } = req.body;
 
-  if (!id || !isUuid(id) || !nome || !dataDeIncorporacao || !cargo) {
+  const errors = {};
+  if (!nome) errors.nome = "Campo obrigatório";
+  if (!dataDeIncorporacao) errors.dataDeIncorporacao = "Campo obrigatório (YYYY-MM-DD)";
+  if (!cargo) errors.cargo = "Campo obrigatório";
+
+  if (Object.keys(errors).length > 0) {
     return res.status(400).json({
       status: 400,
       message: "Parâmetros inválidos",
-      errors: {
-        id: "UUID obrigatório",
-        nome: "Campo obrigatório",
-        dataDeIncorporacao: "Campo obrigatório (YYYY-MM-DD)",
-        cargo: "Campo obrigatório"
-      }
+      errors
     });
   }
 
-  const novoAgente = { id, nome, dataDeIncorporacao, cargo };
+  const novoAgente = {
+    id: uuidv4(),
+    nome,
+    dataDeIncorporacao,
+    cargo
+  };
+
   agentesRepository.create(novoAgente);
 
   res.status(201).json(novoAgente);
