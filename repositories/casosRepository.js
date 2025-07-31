@@ -1,15 +1,11 @@
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4, validate: isUuid } = require('uuid');
 const agentesRepository = require('./agentesRepository');
 
-const agentes = agentesRepository.findAll();
+// Importa o ID fixo do agente inicial
+const { agenteInicialId } = agentesRepository;
 
-let agenteInicialId = null;
-if (agentes.length > 0) {
-  agenteInicialId = agentes[0].id;
-} else {
-  // Garante que sempre haja um ID válido, mas idealmente isso nunca deveria acontecer
-  agenteInicialId = uuidv4();
-  console.warn("⚠️ Nenhum agente encontrado ao criar caso inicial. Usando ID fictício.");
+if (!isUuid(agenteInicialId)) {
+  throw new Error("⚠️ ID do agente inicial inválido. Verifique o agentesRepository.");
 }
 
 const casos = [

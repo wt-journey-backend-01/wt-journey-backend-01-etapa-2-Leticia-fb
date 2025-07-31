@@ -2,7 +2,6 @@ const casosRepository = require('../repositories/casosRepository');
 const agentesRepository = require('../repositories/agentesRepository');
 const { validate: isUuid } = require('uuid');
 
-// Util para verificar status válido
 function isStatusValido(status) {
   return status === 'aberto' || status === 'solucionado';
 }
@@ -50,7 +49,6 @@ function getAllCasos(req, res) {
 
 function getCasoById(req, res) {
   const { id } = req.params;
-  const { agente_id } = req.query;
 
   if (!isUuid(id)) {
     return res.status(400).json({
@@ -70,29 +68,40 @@ function getCasoById(req, res) {
     });
   }
 
-  if (agente_id) {
-    if (!isUuid(agente_id)) {
-      return res.status(400).json({
-        status: 400,
-        message: "Parâmetros inválidos",
-        errors: {
-          agente_id: "O campo 'agente_id' deve ser um UUID válido"
-        }
-      });
-    }
+  return res.json(caso);
+}
 
-    const agente = agentesRepository.findById(caso.agente_id);
-    if (!agente) {
-      return res.status(404).json({
-        status: 404,
-        message: "Agente responsável não encontrado"
-      });
-    }
 
-    return res.json(agente);
+function getAgenteDoCaso(req, res) {
+  const { id } = req.params;
+
+  if (!isUuid(id)) {
+    return res.status(400).json({
+      status: 400,
+      message: "Parâmetros inválidos",
+      errors: {
+        id: "O campo 'id' deve ser um UUID válido"
+      }
+    });
   }
 
-  return res.json(caso);
+  const caso = casosRepository.findById(id);
+  if (!caso) {
+    return res.status(404).json({
+      status: 404,
+      message: "Caso não encontrado"
+    });
+  }
+
+  const agente = agentesRepository.findById(caso.agente_id);
+  if (!agente) {
+    return res.status(404).json({
+      status: 404,
+      message: "Agente responsável não encontrado"
+    });
+  }
+
+  return res.json(agente);
 }
 
 function createCaso(req, res) {
@@ -266,6 +275,7 @@ function deleteCaso(req, res) {
 module.exports = {
   getAllCasos,
   getCasoById,
+  getAgenteDoCaso, 
   createCaso,
   updateCaso,
   patchCaso,

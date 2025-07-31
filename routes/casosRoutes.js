@@ -178,6 +178,9 @@ router.patch('/:id', casosController.patchCaso);
  *       404:
  *         description: Caso não encontrado
  */
+
+router.get('/:id/agente', casosController.getAgenteDoCaso);
+
 router.delete('/:id', casosController.deleteCaso);
 
 module.exports = router;

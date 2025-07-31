@@ -1,7 +1,6 @@
 const agentesRepo = require('../repositories/agentesRepository');
 const { validate: isUuid } = require('uuid');
 
-// Função auxiliar para validar data no formato YYYY-MM-DD
 function isDataValida(data) {
   return /^\d{4}-\d{2}-\d{2}$/.test(data);
 }
@@ -9,11 +8,19 @@ function isDataValida(data) {
 function getAllAgentes(req, res) {
   const { cargo, sort } = req.query;
 
-  if (cargo) return res.json(agentesRepo.findByCargo(cargo));
-  if (sort === "dataDeIncorporacao") return res.json(agentesRepo.sortByData("asc"));
-  if (sort === "-dataDeIncorporacao") return res.json(agentesRepo.sortByData("desc"));
+  let resultados = agentesRepo.findAll();
 
-  return res.json(agentesRepo.findAll());
+  if (cargo) {
+    resultados = resultados.filter(a => a.cargo === cargo);
+  }
+
+  if (sort === 'dataDeIncorporacao') {
+    resultados = resultados.sort((a, b) => new Date(a.dataDeIncorporacao) - new Date(b.dataDeIncorporacao));
+  } else if (sort === '-dataDeIncorporacao') {
+    resultados = resultados.sort((a, b) => new Date(b.dataDeIncorporacao) - new Date(a.dataDeIncorporacao));
+  }
+
+  return res.json(resultados);
 }
 
 function getAgenteById(req, res) {
